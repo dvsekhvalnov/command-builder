@@ -185,6 +185,13 @@ class CommandBuilder
     
     alias :<< :add
     
+    def expansion(values)        
+        @expansions << Array(values)
+        @order << :expansion
+    end
+    
+    alias :<= :expansion
+     
     ##
     # Quotes value for use in command line.
     #
@@ -205,9 +212,13 @@ class CommandBuilder
     #
     
     def quote(value)
-        value = value.to_s
-        Shellwords::escape(value)
-    end
+        if value.is_a? Array
+          value.map { |item| Shellwords::escape(item) }.join ','
+        else
+          value = value.to_s
+          Shellwords::escape(value)
+        end
+    end        
     
     ##
     # Executes the command. If block given, takes it output of the 
@@ -242,11 +253,15 @@ class CommandBuilder
         cmd = @command.to_s.gsub(" ", "\\ ")
         args = @args.dup
         params = @params.dup
-        
+        expansions = @expansions.dup
+                
         @order.each do |type|
             if type == :argument
                 name, value = args.shift
-                __add_arg(cmd, name, value)
+                __add_arg(cmd, name, value)                
+            elsif type == :expansion
+               expansion=expansions.shift
+               cmd << " {" << self.quote(expansion) << "}"
             else
                 param = params.shift
                 cmd << " " << self.quote(param.to_s)
@@ -267,6 +282,7 @@ class CommandBuilder
         @args = [ ]
         @params = [ ]
         @order = [ ]
+        @expansions=[]
         self
     end
     
