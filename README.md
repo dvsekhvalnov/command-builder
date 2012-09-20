@@ -1,6 +1,16 @@
 Command Builder
 ===============
 
+**This fork** adds support for adding Bash expansions. 
+Examples:
+
+	cmd = CommandBuilder::new(:ls)
+	cmd <= ['./rock & roll','./soul']  # or cmd.expansion(...)
+
+Individual items in expansion will be escaped approporiately. The example above, will output:
+
+	ls {./rock\ \&\ roll,./soul}
+
 **Command Builder** builds command runnable from shell by simple and 
 ellegant way. Also allows both synchronous executing or asynchronous 
 one using [EventMachine][1]. Here is an real example of call 
